@@ -65,21 +65,20 @@ def config_ssl(config):
     except (NoSectionError, NoOptionError):
         ssl_enabled = False
 
-    if ssl_enabled:
-        ssl_cert = config.get('main', 'ssl_cert')
-        ssl_key = config.get('main', 'ssl_key')
-
-        if ssl_enabled and not os.path.isfile(ssl_cert):
-            raise FileNotFoundError(f"SSL enabled but missing ssl_cert file: {ssl_cert}")
-        if ssl_enabled and not os.path.isfile(ssl_key):
-            raise FileNotFoundError(f"SSL enabled but missing ssl_key file: {ssl_key}")
-
-        return {
-            "certfile": ssl_cert,
-            "keyfile": ssl_key
-        }
-    else:
+    if not ssl_enabled:
         return None
+    ssl_cert = config.get('main', 'ssl_cert')
+    ssl_key = config.get('main', 'ssl_key')
+
+    if ssl_enabled and not os.path.isfile(ssl_cert):
+        raise FileNotFoundError(f"SSL enabled but missing ssl_cert file: {ssl_cert}")
+    if ssl_enabled and not os.path.isfile(ssl_key):
+        raise FileNotFoundError(f"SSL enabled but missing ssl_key file: {ssl_key}")
+
+    return {
+        "certfile": ssl_cert,
+        "keyfile": ssl_key
+    }
 
 
 def parse_config(config_file):
@@ -129,22 +128,55 @@ def create_server_app(listen_port, security_token, notebooks, ssl):
         print(f"""You have no defined token. Please note your process is not secured !
         Please open : {protocol}://{socket.gethostname()}:{listen_port}""")
 
-    server_app = Application([
-        (r"/info", InfoHandler,
-         {'notebook_store': notebook_store, 'security_token': token_digest}),
-        (r"/evaluate", EvaluateHandler,
-         {'notebook_store': notebook_store, 'security_token': token_digest}),
-        (r"/" + api_kernel, APIHandler,
-         {'notebook_store': notebook_store, 'security_token': token_digest}),
-        (r"/" + restart_kernel + "/(.*)", RestartHandler,
-         {'notebook_store': notebook_store, 'security_token': token_digest}),
-        (r"/" + access_kernel + "/(.*)", ReverseProxyHandler,
-         {'notebook_store': notebook_store, 'security_token': token_digest}),
-
-        (r"/(.*)", StaticFileHandler, {'path': root, "default_filename": "index.html"}),
-
-    ])
-    return server_app
+    return Application(
+        [
+            (
+                r"/info",
+                InfoHandler,
+                {
+                    'notebook_store': notebook_store,
+                    'security_token': token_digest,
+                },
+            ),
+            (
+                r"/evaluate",
+                EvaluateHandler,
+                {
+                    'notebook_store': notebook_store,
+                    'security_token': token_digest,
+                },
+            ),
+            (
+                f"/{api_kernel}",
+                APIHandler,
+                {
+                    'notebook_store': notebook_store,
+                    'security_token': token_digest,
+                },
+            ),
+            (
+                f"/{restart_kernel}/(.*)",
+                RestartHandler,
+                {
+                    'notebook_store': notebook_store,
+                    'security_token': token_digest,
+                },
+            ),
+            (
+                f"/{access_kernel}/(.*)",
+                ReverseProxyHandler,
+                {
+                    'notebook_store': notebook_store,
+                    'security_token': token_digest,
+                },
+            ),
+            (
+                r"/(.*)",
+                StaticFileHandler,
+                {'path': root, "default_filename": "index.html"},
+            ),
+        ]
+    )
 
 
 def main(input_args=None):

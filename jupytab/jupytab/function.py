@@ -44,7 +44,7 @@ class Functions:
         arg_dict = jreq['body']['data']
 
         function = self[function_name.lower()]
-        ret_value = list()
+        ret_value = []
 
         arg_dict_values = [value for key, value in sorted(arg_dict.items())]
 
