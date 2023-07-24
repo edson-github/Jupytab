@@ -58,7 +58,7 @@ class DataFrameTable(BaseTable):
         cols_count_dict = dict(Counter(cols))
         # Filter unique items
         cols_count_dict = {key: value for (key, value) in cols_count_dict.items() if value > 1}
-        unique_cols = list()
+        unique_cols = []
         for col in reversed(cols):
             idx = cols_count_dict.get(col, 0)
             unique_cols.insert(0, col if idx == 0 else col + '_' + str(idx))
@@ -135,7 +135,7 @@ class DataFrameTable(BaseTable):
             'json': lambda df: df.to_json(orient='records', date_format="iso", date_unit="s")
         }
 
-        if print_format in output_formatter.keys():
+        if print_format in output_formatter:
             return output_formatter[print_format](output_df)
         else:
             raise NotImplementedError(

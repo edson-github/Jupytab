@@ -36,7 +36,7 @@ def read_version():
     if version_4_release.exists():
         v = version_4_release.read_text().strip().split('=')[1].strip()
         # Let's remove quotes
-        return v[1:len(v) - 1]
+        return v[1:-1]
     elif version_master.exists():
         return version_master.read_text().strip()
     else:

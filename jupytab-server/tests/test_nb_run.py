@@ -57,7 +57,7 @@ def build_uri(uri, params=None, protocol=PROTOCOL, host=HOST, port=PORT, token=S
 
 
 def rget(uri, delay_seconds=5, attempt_count=6):
-    for attempt in range(attempt_count):
+    for _ in range(attempt_count):
         try:
             response = requests.get(uri)
             if response.status_code == 200:
@@ -73,7 +73,7 @@ def rget(uri, delay_seconds=5, attempt_count=6):
 
 
 def rpost(uri, body, delay_seconds=5, attempt_count=6):
-    for attempt in range(attempt_count):
+    for _ in range(attempt_count):
         try:
             response = requests.post(uri, json=body)
             if response.status_code == 200:
@@ -89,17 +89,11 @@ def rpost(uri, body, delay_seconds=5, attempt_count=6):
 
 
 def get_table_by_id(tables, id):
-    for table in tables:
-        if table['id'] == id:
-            return table
-    return None
+    return next((table for table in tables if table['id'] == id), None)
 
 
 def get_column_by_id(columns, id):
-    for column in columns:
-        if column['id'] == id:
-            return column
-    return None
+    return next((column for column in columns if column['id'] == id), None)
 
 
 def test_airflights_schema():

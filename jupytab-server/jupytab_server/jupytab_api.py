@@ -13,7 +13,7 @@ from jupytab_server import __version__
 import time
 
 application_start_time = time.time()
-root = os.path.dirname(__file__) + '/static'
+root = f'{os.path.dirname(__file__)}/static'
 api_kernel = 'api'
 access_kernel = 'kernel'
 restart_kernel = 'api/restart'
@@ -22,8 +22,7 @@ evaluate_method = "evaluate"
 
 
 def transform_url(protocol, host, path, query=''):
-    new_path = urlunparse((protocol, host, path, '', query, ''))
-    return new_path
+    return urlunparse((protocol, host, path, '', query, ''))
 
 
 class BaseRequestHandler(RequestHandler):
@@ -141,20 +140,18 @@ class APIHandler(BaseRequestHandler):
         if self.security_token and self.get_argument(uri_security_token) != self.security_token:
             raise ConnectionRefusedError("Invalid security token")
 
-        notebook_dict = {}
-
-        for key, value in self.notebook_store.items():
-            notebook_dict[key] = \
-                {
-                    "kernel_id": key,
-                    "name": value.name,
-                    "status": value.kernel_status,
-                    "path": str(value.notebook_file),
-                    "host": value.host,
-                    "port": value.port,
-                    "description": value.description
-                }
-
+        notebook_dict = {
+            key: {
+                "kernel_id": key,
+                "name": value.name,
+                "status": value.kernel_status,
+                "path": str(value.notebook_file),
+                "host": value.host,
+                "port": value.port,
+                "description": value.description,
+            }
+            for key, value in self.notebook_store.items()
+        }
         self.write(notebook_dict)
 
 
